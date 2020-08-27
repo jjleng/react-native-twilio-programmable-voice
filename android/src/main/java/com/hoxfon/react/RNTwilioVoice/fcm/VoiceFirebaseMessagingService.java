@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
+import android.os.Build;
 
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
@@ -81,6 +82,14 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         public void run() {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                              Intent incomingIntent = new Intent();
+                              incomingIntent.setAction("com.hoxfon.react.RNTwilioVoice.fcm.INCOMING_CALL");
+                              incomingIntent.putExtra(INCOMING_CALL_NOTIFICATION_ID, notificationId);
+                              incomingIntent.putExtra(INCOMING_CALL_INVITE, callInvite);
+                              sendBroadcast(incomingIntent);
+                            }
+
                             // Construct and load our normal React JS code bundle
                             ReactInstanceManager mReactInstanceManager = ((ReactApplication) getApplication()).getReactNativeHost().getReactInstanceManager();
                             ReactContext context = mReactInstanceManager.getCurrentReactContext();
@@ -90,16 +99,18 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                                 if (BuildConfig.DEBUG) {
                                     Log.d(TAG, "CONTEXT present appImportance = " + appImportance);
                                 }
-                                Intent launchIntent = callNotificationManager.getLaunchIntent(
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                                    Intent launchIntent = callNotificationManager.getLaunchIntent(
                                         (ReactApplicationContext)context,
                                         notificationId,
                                         callInvite,
                                         false,
                                         appImportance
-                                );
-                                // app is not in foreground
-                                if (appImportance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                                    context.startActivity(launchIntent);
+                                    );
+                                    // app is not in foreground
+                                    if (appImportance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                        context.startActivity(launchIntent);
+                                    }
                                 }
                                 Intent intent = new Intent(ACTION_INCOMING_CALL);
                                 intent.putExtra(INCOMING_CALL_NOTIFICATION_ID, notificationId);
@@ -113,8 +124,16 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                                         if (BuildConfig.DEBUG) {
                                             Log.d(TAG, "CONTEXT not present appImportance = " + appImportance);
                                         }
-                                        Intent launchIntent = callNotificationManager.getLaunchIntent((ReactApplicationContext)context, notificationId, callInvite, true, appImportance);
-                                        context.startActivity(launchIntent);
+                                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                                            Intent launchIntent = callNotificationManager.getLaunchIntent(
+                                                (ReactApplicationContext)context,
+                                                notificationId,
+                                                callInvite,
+                                                true,
+                                                appImportance);
+                                            context.startActivity(launchIntent);
+                                        }
+
                                         Intent intent = new Intent(ACTION_INCOMING_CALL);
                                         intent.putExtra(INCOMING_CALL_NOTIFICATION_ID, notificationId);
                                         intent.putExtra(INCOMING_CALL_INVITE, callInvite);
@@ -138,6 +157,13 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         public void run() {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                Intent cancelIntent = new Intent();
+                                cancelIntent.setAction("com.hoxfon.react.RNTwilioVoice.fcm.CANCELED_CALL");
+                                cancelIntent.putExtra(CANCELLED_CALL_INVITE, cancelledCallInvite);
+                                sendBroadcast(cancelIntent);
+                            }
+
                             VoiceFirebaseMessagingService.this.sendCancelledCallInviteToActivity(cancelledCallInvite);
                         }
                     });
