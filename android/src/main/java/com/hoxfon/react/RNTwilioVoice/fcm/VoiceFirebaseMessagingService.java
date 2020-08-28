@@ -85,6 +85,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                               Intent incomingIntent = new Intent();
                               incomingIntent.setAction("com.hoxfon.react.RNTwilioVoice.fcm.INCOMING_CALL");
+                              incomingIntent.setPackage("com.leepit_phone_mobile");
                               incomingIntent.putExtra(INCOMING_CALL_NOTIFICATION_ID, notificationId);
                               incomingIntent.putExtra(INCOMING_CALL_INVITE, callInvite);
                               sendBroadcast(incomingIntent);
@@ -162,6 +163,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                 Intent cancelIntent = new Intent();
                                 cancelIntent.setAction("com.hoxfon.react.RNTwilioVoice.fcm.CANCELED_CALL");
+                                cancelIntent.setPackage("com.leepit_phone_mobile");
                                 cancelIntent.putExtra(CANCELLED_CALL_INVITE, cancelledCallInvite);
                                 sendBroadcast(cancelIntent);
                             }
